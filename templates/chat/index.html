@@ -1,0 +1,32 @@
+<!-- chat/templates/chat/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Chat Rooms</title>
+</head>
+<body>
+    What chat room would you like to enter?<br>
+    <input id="room-id-input" type="text" size="100"><br>
+    <input id="room-id-submit" type="button" value="Enter">
+    <input id="lobby" type="button" value="Enter Chats">
+
+    <script>
+        document.querySelector('#room-id-input').focus();
+        document.querySelector('#room-id-input').onkeyup = function(e) {
+            if (e.keyCode === 13) {  // enter, return
+                document.querySelector('#room-id-submit').click();
+            }
+        };
+
+        document.querySelector('#room-id-submit').onclick = function(e) {
+            var roomId = document.querySelector('#room-id-input').value;
+            window.location.pathname = '/chat/' + roomId + '/';
+        };
+
+        document.querySelector('#lobby').onclick = function(e) {
+            window.location.pathname = '/lobby/';
+        };
+    </script>
+</body>
+</html>

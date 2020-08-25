@@ -1,0 +1,6 @@
+{
+    "installed-apps": [
+        "redis"
+    ],
+    "package-name": "redis"
+}

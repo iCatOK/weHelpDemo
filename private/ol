@@ -1,0 +1,6 @@
+(SIMILARITY(
+    (SIMILARITY(
+        (SIMILARITY("api_user"."name", 'arsen') +
+         SIMILARITY("api_user"."surname", 'arsen')), 'arsen') +
+         SIMILARITY("api_user"."about_me", 'arsen')), 'arsen') +
+         SIMILARITY("api_user"."education_description", 'arsen')) AS "similarity"

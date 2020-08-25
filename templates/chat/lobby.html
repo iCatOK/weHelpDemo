@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lobby Chats - {{ email }}</title>
+</head>
+<body>
+    <h3>Welcome, {{ email }}!</h3><br>
+    <h4>Create new chat (type user in area) or select suggested</h4>
+    <input id="email-input" type="text" size="100">
+    <input id="create-chat" type="button" value="Create"><br>
+
+    <div id="chat-log-wrap">
+        <ul id="chat-log">
+
+        </ul>
+    </div>
+
+    {{ email|json_script:"email" }}
+    <script src="{% static 'reconnecting-websocket.js' %}"></script>
+    <script>
+        const email = {{ email }}
+
+        const chatSocket = new ReconnectingWebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/lobby/'
+        );
+
+        chatSocket.onopen = function(e) {
+            fetchChats();
+        }
+
+        function fetchChats() {
+            var elem = document.querySelector('#chat-log');
+            elem.parentNode.removeChild(elem);
+            var msgListTag = document.createElement('ul');
+            msgListTag.id = 'chat-log'
+            var wrapper = document.querySelector('#chat-log-wrap')
+            wrapper.appendChild(msgListTag)
+
+            chatSocket.send(JSON.stringify(
+                {
+                    'command': 'fetch_chats',
+                    'from': email
+                }));
+        }
+
+        chatSocket.onmessage = function(e) {
+            var data = JSON.parse(e.data);
+            console.log('connand is ' + data['command'])
+            if (data['command'] === 'chats') {
+                for (let i=0; i<data['chats'].length; i++) {
+                    createChat(data['chats'][i]);
+                }
+            } else if (data['command'] === 'new_chat'){
+                console.log('new chat here');
+                createChat(data['chat']);
+            }
+        };
+
+        function createChat(data) {
+            var author = email===data['user1'] ? data['user2'] : data['user1'];
+            var msgListTag = document.createElement('li');
+            msgListTag.id = 'room-' + data['room_id']
+            var pTag = document.createElement('p');
+
+            var btnTag = document.createElement('input')
+            btnTag.type = 'button'
+            btnTag.id = 'chat-message-submit'
+            btnTag.value = 'Enter'
+            btnTag.onclick = function (e){
+                window.location.pathname = '/chat/' + data['room_id'] + '/';
+            }
+
+            pTag.textContent = author;
+
+            msgListTag.appendChild(pTag);
+            msgListTag.appendChild(btnTag)
+            document.querySelector('#chat-log').appendChild(msgListTag);
+        }
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#create-chat').onclick = function(e) {
+            const receiverInputDom = document.querySelector('#email-input');
+            const receiver = receiverInputDom.value;
+            console.log('creating chat')
+            chatSocket.send(JSON.stringify({
+                'receiver': receiver,
+                'command': 'new_chat',
+                'from': email
+            }));
+            receiverInputDom.value = '';
+        };
+    </script>
+</body>
+</html>
